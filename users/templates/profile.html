@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}
+Profile
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-md-8">
+
+        <div class="card shadow">
+
+            <div class="card-header bg-primary text-white">
+
+                <h3>User Profile</h3>
+
+            </div>
+
+            <div class="card-body">
+
+                <h4>Welcome {{ user.username }}</h4>
+
+                <hr>
+
+                <p><strong>Username:</strong> {{ user.username }}</p>
+
+                <p><strong>Email:</strong> {{ user.email }}</p>
+
+                <p><strong>Total Posts:</strong> {{ total_posts }}</p>
+
+                <p><strong>Joined:</strong> {{ user.date_joined|date:"d M Y" }}</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

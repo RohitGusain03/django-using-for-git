@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} · @{{ profile_user.username }}{% endblock %}
+
+{% block content %}
+
+<div class="page-head">
+    <span class="eyebrow">👥 {{ title|lower }}</span>
+    <h1>{{ title }} of @{{ profile_user.username }}</h1>
+</div>
+
+{% if users %}
+    <div class="simple-user-list">
+        {% for u in users %}
+            <a href="{% url 'public_profile' u.username %}" class="simple-user-row sticker sticker--interactive">
+                <img src="{{ u.profile.profile_image.url }}" alt="">
+                <div>
+                    <div class="name">@{{ u.username }}</div>
+                    <div class="bio">{{ u.profile.bio|default:"No bio yet."|truncatewords:12 }}</div>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <span class="emoji">👀</span>
+        <h3>Nobody here yet</h3>
+    </div>
+{% endif %}
+
+{% endblock %}

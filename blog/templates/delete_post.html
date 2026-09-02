@@ -1,57 +1,21 @@
 {% extends "base.html" %}
 
-{% block title %}
-Delete Post
-{% endblock %}
+{% block title %}Delete post{% endblock %}
 
 {% block content %}
 
-<div class="row justify-content-center">
+<div class="confirm-card sticker">
+    <span class="emoji">🗑️</span>
+    <h2>Delete "{{ post.title }}"?</h2>
+    <p class="text-soft">This can't be undone — the post, its images and comments will be gone for good.</p>
 
-    <div class="col-md-6">
-
-        <div class="card shadow border-danger">
-
-            <div class="card-header bg-danger text-white">
-
-                <h3>Delete Post</h3>
-
-            </div>
-
-            <div class="card-body">
-
-                <p class="fs-5">
-
-                    Are you sure you want to delete
-
-                    <strong>"{{ post.title }}"</strong> ?
-
-                </p>
-
-                <form method="POST">
-
-                    {% csrf_token %}
-
-                    <button class="btn btn-danger">
-
-                        Delete
-
-                    </button>
-
-                    <a href="{% url 'home' %}" class="btn btn-secondary">
-
-                        Cancel
-
-                    </a>
-
-                </form>
-
-            </div>
-
+    <form method="post">
+        {% csrf_token %}
+        <div class="confirm-actions">
+            <a href="{% url 'post_detail' post.id %}" class="btn btn-ghost">Cancel</a>
+            <button type="submit" class="btn btn-coral">Yes, delete it</button>
         </div>
-
-    </div>
-
+    </form>
 </div>
 
 {% endblock %}

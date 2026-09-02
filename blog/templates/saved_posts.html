@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Saved posts{% endblock %}
+
+{% block content %}
+
+<div class="page-head">
+    <span class="eyebrow">🔖 your stash</span>
+    <h1>Saved posts</h1>
+    <p class="lead">The memes you tucked away for later.</p>
+</div>
+
+{% if posts %}
+    <div class="feed-grid">
+        {% for post in posts %}
+            {% include "partials/post_card.html" with remove_on_unsave=True %}
+        {% endfor %}
+    </div>
+
+    {% include "partials/pagination.html" %}
+{% else %}
+    <div class="empty-state">
+        <span class="emoji">🫙</span>
+        <h3>Nothing saved yet</h3>
+        <p>Tap the bookmark icon on any post to keep it here.</p>
+        <a href="{% url 'home' %}" class="btn btn-primary btn-sm" style="margin-top:14px;">Browse the stack</a>
+    </div>
+{% endif %}
+
+{% endblock %}

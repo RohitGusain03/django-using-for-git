@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+
+<div class="page-head">
+    <span class="eyebrow">🔔 inbox</span>
+    <h1>Notifications</h1>
+    <p class="lead">Likes, comments, replies and new followers, all in one place.</p>
+</div>
+
+{% if notifications %}
+    <div class="notif-list">
+        {% for note in notifications %}
+            <a href="{{ note.get_absolute_url }}" class="notif-row sticker {% if not note.is_read %}sticker--interactive{% endif %}">
+                <img src="{{ note.sender.profile.profile_image.url }}" alt="">
+                <div>
+                    <div class="msg">
+                        <strong>@{{ note.sender.username }}</strong>
+                        {% if note.notification_type == 'like' %}liked your post{% if note.post %} "{{ note.post.title|truncatechars:40 }}"{% endif %}
+                        {% elif note.notification_type == 'comment' %}commented on your post{% if note.post %} "{{ note.post.title|truncatechars:40 }}"{% endif %}
+                        {% elif note.notification_type == 'follow' %}started following you
+                        {% else %}replied to your comment{% if note.post %} on "{{ note.post.title|truncatechars:40 }}"{% endif %}
+                        {% endif %}
+                    </div>
+                    <time>{{ note.created_at|timesince }} ago</time>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+
+    {% include "partials/pagination.html" %}
+{% else %}
+    <div class="empty-state">
+        <span class="emoji">📭</span>
+        <h3>All quiet for now</h3>
+        <p>When someone likes, comments, replies or follows you, it'll show up here.</p>
+    </div>
+{% endif %}
+
+{% endblock %}

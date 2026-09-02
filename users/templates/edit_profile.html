@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Edit profile{% endblock %}
+
+{% block content %}
+
+<div class="composer">
+    <div class="page-head" style="padding-top:10px;">
+        <span class="eyebrow">⚙️ settings</span>
+        <h1>Edit your profile</h1>
+        <p class="lead">This is how other members of the stack will see you.</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="composer-card sticker">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label class="form-label" for="{{ user_form.username.id_for_label }}">Username</label>
+            {{ user_form.username }}
+            {% if user_form.username.errors %}<div class="form-errors">{{ user_form.username.errors|striptags }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="{{ user_form.email.id_for_label }}">Email</label>
+            {{ user_form.email }}
+            {% if user_form.email.errors %}<div class="form-errors">{{ user_form.email.errors|striptags }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="{{ form.profile_image.id_for_label }}">Profile photo</label>
+            <div class="current-image-preview">
+                <img src="{{ profile.profile_image.url }}" alt="" style="width:90px; height:90px; border-radius:50%; object-fit:cover;">
+            </div>
+            {{ form.profile_image }}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="{{ form.banner_image.id_for_label }}">Banner image</label>
+            {% if profile.banner_image %}
+                <div class="current-image-preview">
+                    <img src="{{ profile.banner_image.url }}" alt="" style="max-height:140px; width:100%; object-fit:cover;">
+                </div>
+            {% endif %}
+            {{ form.banner_image }}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="{{ form.bio.id_for_label }}">Bio</label>
+            {{ form.bio }}
+            <p class="form-hint"><span id="bioCounter">0/250</span></p>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="{{ form.location.id_for_label }}">Location</label>
+            {{ form.location }}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="{{ form.website.id_for_label }}">Website</label>
+            {{ form.website }}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="{{ form.github.id_for_label }}">GitHub</label>
+            {{ form.github }}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="{{ form.linkedin.id_for_label }}">LinkedIn</label>
+            {{ form.linkedin }}
+        </div>
+
+        <div class="flex justify-between items-center" style="margin-top:20px;">
+            <a href="{% url 'public_profile' user.username %}" class="btn btn-ghost">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

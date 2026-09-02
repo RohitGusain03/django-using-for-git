@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}#{{ tag.name }}{% endblock %}
+
+{% block content %}
+
+<div class="page-head">
+    <span class="eyebrow">🏷️ tag</span>
+    <h1>#{{ tag.name }}</h1>
+    <p class="lead">{{ posts.paginator.count }} meme{{ posts.paginator.count|pluralize }} tagged #{{ tag.name }}.</p>
+</div>
+
+{% if posts %}
+    <div class="feed-grid">
+        {% for post in posts %}
+            {% include "partials/post_card.html" %}
+        {% endfor %}
+    </div>
+
+    {% include "partials/pagination.html" %}
+{% else %}
+    <div class="empty-state">
+        <span class="emoji">🫙</span>
+        <h3>Nothing tagged #{{ tag.name }} yet</h3>
+        <p>Post a meme and add this tag to get it started.</p>
+        <a href="{% url 'create_post' %}" class="btn btn-primary btn-sm" style="margin-top:14px;">+ Post a meme</a>
+    </div>
+{% endif %}
+
+{% endblock %}

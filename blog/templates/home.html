@@ -1,200 +1,112 @@
 {% extends "base.html" %}
 
-{% block title %}
-Home
-{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="page-head">
+    <span class="eyebrow">✦ fresh off the feed</span>
+    <h1>
+        {% if query %}Results for "{{ query }}"{% else %}The stack{% endif %}
+    </h1>
+    <p class="lead">
+        {% if query %}
+            {{ posts.paginator.count }} meme{{ posts.paginator.count|pluralize }} matching your search.
+        {% else %}
+            Browse, react and save the internet's finest. Fresh drops, sorted your way.
+        {% endif %}
+    </p>
+</div>
 
-    <h2 class="mb-4">
-        Latest Posts
-    </h2>
+<div class="feed-layout">
+    <div>
 
-    <!-- Search -->
+        <div class="filter-bar">
+            <div class="sort-tabs">
+                <a href="?sort=latest{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" class="{% if sort == 'latest' %}is-active{% endif %}">🕒 Latest</a>
+                <a href="?sort=trending{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" class="{% if sort == 'trending' %}is-active{% endif %}">🔥 Trending</a>
+                <a href="?sort=top{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}" class="{% if sort == 'top' %}is-active{% endif %}">⭐ Top</a>
+                {% if user.is_authenticated %}
+                    <a href="?sort=following{% if query %}&q={{ query }}{% endif %}" class="{% if sort == 'following' %}is-active{% endif %}">👥 Following</a>
+                {% endif %}
+            </div>
 
-    <form method="GET" class="mb-4">
-
-        <div class="input-group">
-
-            <input
-                type="text"
-                class="form-control"
-                name="q"
-                placeholder="Search posts..."
-                value="{{ query }}">
-
-            <button class="btn btn-primary">
-                Search
-            </button>
-
+            <a href="{% url 'create_post' %}" class="btn btn-coral btn-sm">+ New post</a>
         </div>
 
-    </form>
-
-    {% for post in posts %}
-
-    <div class="card shadow-sm mb-4">
-
-        {% if post.image %}
-
-        <img
-            src="{{ post.image.url }}"
-            class="card-img-top"
-            style="height:250px; object-fit:cover;">
-
+        {% if trending_tags %}
+            <div class="tag-row">
+                {% for tag in trending_tags|slice:":8" %}
+                    <a href="{% url 'tag_posts' tag.slug %}" class="chip">#{{ tag.name }} <span class="badge-count">{{ tag.post_total }}</span></a>
+                {% endfor %}
+            </div>
         {% endif %}
 
-        <div class="card-body">
+        {% if posts %}
+            <div class="feed-grid">
+                {% for post in posts %}
+                    {% include "partials/post_card.html" %}
+                {% endfor %}
+            </div>
 
-            <!-- CATEGORY -->
+            {% include "partials/pagination.html" %}
 
-            {% if post.category %}
+        {% else %}
+            <div class="empty-state">
+                <span class="emoji">
+                    {% if sort == 'following' %}👀{% else %}🫙{% endif %}
+                </span>
+                <h3>
+                    {% if query %}No memes found{% elif sort == 'following' %}Your following feed is empty{% else %}Nothing here yet{% endif %}
+                </h3>
+                <p>
+                    {% if query %}
+                        Try a different search term or browse the latest instead.
+                    {% elif sort == 'following' %}
+                        Follow some creators to see their memes here.
+                    {% else %}
+                        Be the first to drop a meme in the stack.
+                    {% endif %}
+                </p>
+                <a href="{% url 'create_post' %}" class="btn btn-primary btn-sm" style="margin-top:14px;">+ Post a meme</a>
+            </div>
+        {% endif %}
+    </div>
 
-            <a href="{% url 'category_posts' post.category.id %}"
-               class="badge bg-primary text-decoration-none mb-2">
-
-                {{ post.category.name }}
-
-            </a>
-
-            {% endif %}
-
-            <h3>
-
-                {{ post.title }}
-
-            </h3>
-
-            <p class="text-muted">
-
-                By
-
-                <strong>
-
-                    {{ post.author.username }}
-
-                </strong>
-
-            </p>
-
-            <p class="text-secondary">
-
-                {{ post.created_at|date:"d M Y" }}
-
-            </p>
-
-            <p>
-
-                {{ post.content|truncatewords:25 }}
-
-            </p>
-
-            <a
-                href="{% url 'post_detail' post.id %}"
-                class="btn btn-primary">
-
-                Read More
-
-            </a>
-
-            {% if user == post.author %}
-
-            <a
-                href="{% url 'edit_post' post.id %}"
-                class="btn btn-warning">
-
-                Edit
-
-            </a>
-
-            <a
-                href="{% url 'delete_post' post.id %}"
-                class="btn btn-danger">
-
-                Delete
-
-            </a>
-
-            {% endif %}
-
+    <aside class="sidebar">
+        <div class="sidebar-card sticker">
+            <h3>🏷️ Categories</h3>
+            <div class="category-list">
+                {% for category in categories %}
+                    <a href="{% url 'category_posts' category.id %}">
+                        <span>{{ category.icon }} {{ category.name }}</span>
+                        <span class="badge-count">{{ category.posts.count }}</span>
+                    </a>
+                {% empty %}
+                    <p class="text-faint" style="font-size:13px;">No categories yet.</p>
+                {% endfor %}
+            </div>
         </div>
 
-    </div>
+        {% if trending_tags %}
+            <div class="sidebar-card sticker">
+                <h3>💬 Trending tags</h3>
+                <div class="tag-cloud">
+                    {% for tag in trending_tags %}
+                        <a href="{% url 'tag_posts' tag.slug %}" class="chip">#{{ tag.name }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
 
-    {% empty %}
-
-    <div class="alert alert-info">
-
-        No posts found.
-
-    </div>
-
-    {% endfor %}
-
-    <!-- Pagination -->
-
-    {% if posts.has_other_pages %}
-
-    <nav>
-
-        <ul class="pagination justify-content-center">
-
-            {% if posts.has_previous %}
-
-            <li class="page-item">
-
-                <a
-                    class="page-link"
-                    href="?page={{ posts.previous_page_number }}">
-
-                    Previous
-
-                </a>
-
-            </li>
-
-            {% endif %}
-
-            {% for page in posts.paginator.page_range %}
-
-            <li class="page-item {% if posts.number == page %}active{% endif %}">
-
-                <a
-                    class="page-link"
-                    href="?page={{ page }}">
-
-                    {{ page }}
-
-                </a>
-
-            </li>
-
-            {% endfor %}
-
-            {% if posts.has_next %}
-
-            <li class="page-item">
-
-                <a
-                    class="page-link"
-                    href="?page={{ posts.next_page_number }}">
-
-                    Next
-
-                </a>
-
-            </li>
-
-            {% endif %}
-
-        </ul>
-
-    </nav>
-
-    {% endif %}
-
+        {% if not user.is_authenticated %}
+            <div class="sidebar-card sticker" style="text-align:center;">
+                <h3>Join the stack 🧃</h3>
+                <p class="text-soft" style="font-size:13px;">Sign up to like, save and post your own memes.</p>
+                <a href="{% url 'register' %}" class="btn btn-primary btn-block btn-sm">Create account</a>
+            </div>
+        {% endif %}
+    </aside>
 </div>
 
 {% endblock %}

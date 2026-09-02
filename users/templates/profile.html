@@ -1,43 +1,95 @@
 {% extends "base.html" %}
 
-{% block title %}
-Profile
-{% endblock %}
+{% block title %}@{{ profile_user.username }}{% endblock %}
 
 {% block content %}
 
-<div class="row justify-content-center">
+<div class="profile-page">
 
-    <div class="col-md-8">
-
-        <div class="card shadow">
-
-            <div class="card-header bg-primary text-white">
-
-                <h3>User Profile</h3>
-
-            </div>
-
-            <div class="card-body">
-
-                <h4>Welcome {{ user.username }}</h4>
-
-                <hr>
-
-                <p><strong>Username:</strong> {{ user.username }}</p>
-
-                <p><strong>Email:</strong> {{ user.email }}</p>
-
-                <p><strong>Total Posts:</strong> {{ total_posts }}</p>
-
-                <p><strong>Joined:</strong> {{ user.date_joined|date:"d M Y" }}</p>
-
-            </div>
-
-        </div>
-
+    <div class="profile-banner">
+        {% if profile.banner_image %}
+            <img src="{{ profile.banner_image.url }}" alt="">
+        {% endif %}
     </div>
 
+    <div class="profile-head">
+        <img class="profile-avatar" src="{{ profile.profile_image.url }}" alt="">
+
+        <div class="profile-identity">
+            <h1>{{ profile_user.username }}</h1>
+            <div class="username">@{{ profile_user.username }}</div>
+        </div>
+
+        <div class="profile-actions">
+            {% if is_own_profile %}
+                <a href="{% url 'edit_profile' %}" class="btn btn-ghost btn-sm">⚙️ Edit profile</a>
+            {% elif user.is_authenticated %}
+                <button
+                    type="button"
+                    class="btn btn-sm {% if is_following %}btn-primary{% else %}btn-ghost{% endif %}"
+                    data-follow-url="{% url 'toggle_follow' profile_user.username %}"
+                >
+                    {% if is_following %}Following{% else %}Follow{% endif %}
+                </button>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-ghost btn-sm">Follow</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if profile.bio %}
+        <p class="profile-bio">{{ profile.bio }}</p>
+    {% endif %}
+
+    <div class="profile-links">
+        {% if profile.location %}<span>📍 {{ profile.location }}</span>{% endif %}
+        {% if profile.website %}<a href="{{ profile.website }}" target="_blank" rel="noopener">🔗 Website</a>{% endif %}
+        {% if profile.github %}<a href="{{ profile.github }}" target="_blank" rel="noopener">💻 GitHub</a>{% endif %}
+        {% if profile.linkedin %}<a href="{{ profile.linkedin }}" target="_blank" rel="noopener">💼 LinkedIn</a>{% endif %}
+        <span>🗓️ Joined {{ profile.created_at|date:"M Y" }}</span>
+    </div>
+
+    <div class="profile-stats">
+        <div><b>{{ profile.post_count }}</b>posts</div>
+        <a href="{% url 'follow_list' profile_user.username 'followers' %}"><b data-follower-count>{{ profile.follower_count }}</b>followers</a>
+        <a href="{% url 'follow_list' profile_user.username 'following' %}"><b>{{ profile.following_count }}</b>following</a>
+    </div>
+
+    <div class="profile-tabs">
+        <a href="?tab=posts" class="{% if tab == 'posts' %}is-active{% endif %}">🖼️ Posts</a>
+        {% if is_own_profile %}
+            <a href="?tab=saved" class="{% if tab == 'saved' %}is-active{% endif %}">🔖 Saved</a>
+            <a href="?tab=liked" class="{% if tab == 'liked' %}is-active{% endif %}">❤️ Liked</a>
+        {% endif %}
+    </div>
+
+    <div class="profile-body">
+        {% if posts %}
+            <div class="feed-grid">
+                {% for post in posts %}
+                    {% if tab == 'saved' %}
+                        {% include "partials/post_card.html" with remove_on_unsave=True %}
+                    {% else %}
+                        {% include "partials/post_card.html" %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            {% include "partials/pagination.html" %}
+        {% else %}
+            <div class="empty-state">
+                <span class="emoji">
+                    {% if tab == 'saved' %}🔖{% elif tab == 'liked' %}❤️{% else %}🫙{% endif %}
+                </span>
+                <h3>
+                    {% if tab == 'saved' %}No saved posts yet{% elif tab == 'liked' %}No liked posts yet{% else %}No posts yet{% endif %}
+                </h3>
+                {% if is_own_profile and tab == 'posts' %}
+                    <a href="{% url 'create_post' %}" class="btn btn-primary btn-sm" style="margin-top:14px;">+ Post a meme</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
 </div>
 
 {% endblock %}

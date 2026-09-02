@@ -1,204 +1,244 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}
-{{ post.title }}
-{% endblock %}
+{% block title %}{{ post.title }}{% endblock %}
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="breadcrumb">
+    <a href="{% url 'home' %}">Home</a>
+    <span>/</span>
+    {% if post.category %}
+        <a href="{% url 'category_posts' post.category.id %}">{{ post.category.name }}</a>
+        <span>/</span>
+    {% endif %}
+    <span class="text-soft">{{ post.title|truncatechars:40 }}</span>
+</div>
 
-    <div class="card shadow">
+<div class="post-detail">
+    <div class="pd-main">
 
-        {% if post.image %}
+        <article class="pd-card sticker">
 
-        <img
-            src="{{ post.image.url }}"
-            class="card-img-top"
-            style="max-height:500px; object-fit:cover;">
+            <div class="pd-header">
+                <div class="pd-author">
+                    <img src="{{ post.author.profile.profile_image.url }}" alt="">
+                    <div>
+                        <div class="name">
+                            <a href="{% url 'public_profile' post.author.username %}">@{{ post.author.username }}</a>
+                        </div>
+                        <div class="meta">{{ post.created_at|date:"M j, Y · g:i A" }} · 👁 {{ post.views }} views</div>
+                    </div>
+                </div>
 
-        {% endif %}
-
-        <div class="card-body">
-
-            {% if post.category %}
-
-            <a
-                href="{% url 'category_posts' post.category.id %}"
-                class="badge bg-primary text-decoration-none mb-3">
-
-                {{ post.category.name }}
-
-            </a>
-
-            {% endif %}
-
-            <h1>{{ post.title }}</h1>
-
-            <p class="text-muted">
-
-                By
-
-                <strong>
-
-                    {{ post.author.username }}
-
-                </strong>
-
-            </p>
-
-            <p class="text-secondary">
-
-                Posted on {{ post.created_at|date:"d M Y" }}
-
-            </p>
-
-            <hr>
-
-            <p style="white-space:pre-line;">
-
-                {{ post.content }}
-
-            </p>
-
-            <hr>
-
-            <a
-                href="{% url 'home' %}"
-                class="btn btn-secondary">
-
-                Back
-
-            </a>
-
-            {% if user == post.author %}
-
-            <a
-                href="{% url 'edit_post' post.id %}"
-                class="btn btn-warning">
-
-                Edit
-
-            </a>
-
-            <a
-                href="{% url 'delete_post' post.id %}"
-                class="btn btn-danger">
-
-                Delete
-
-            </a>
-
-            {% endif %}
-
-        </div>
-
-    </div>
-
-    <!-- COMMENTS -->
-
-    <div class="card mt-4 shadow">
-
-        <div class="card-header">
-
-            <h4>
-
-                Comments ({{ comments.count }})
-
-            </h4>
-
-        </div>
-
-        <div class="card-body">
-
-            {% for comment in comments %}
-
-            <div class="border rounded p-3 mb-3">
-
-                <strong>
-
-                    {{ comment.author.username }}
-
-                </strong>
-
-                <small class="text-muted">
-
-                    {{ comment.created_at|date:"d M Y H:i" }}
-
-                </small>
-
-                <p class="mt-2">
-
-                    {{ comment.content }}
-
-                </p>
-
-                {% if user == comment.author %}
-
-                <a
-                    href="{% url 'delete_comment' comment.id %}"
-                    class="btn btn-sm btn-danger">
-
-                    Delete
-
-                </a>
-
+                {% if post.category %}
+                    <span class="badge-category">{{ post.category.icon }} {{ post.category.name }}</span>
                 {% endif %}
-
             </div>
 
-            {% empty %}
+            <h1 class="pd-title">{{ post.title }}</h1>
 
-            <p>
+            {% if post.content %}
+                <p class="pd-content">{{ post.content }}</p>
+            {% endif %}
 
-                No comments yet.
+            {% if post.image %}
+                <div class="pd-media">
+                    <img src="{{ post.image.url }}" alt="{{ post.title }}">
+                </div>
+            {% endif %}
 
-            </p>
+            {% if post.media.all %}
+                <div class="pd-extra-media">
+                    {% for m in post.media.all %}
+                        {% if m.image %}
+                            <img src="{{ m.image.url }}" alt="" data-lightbox-src="{{ m.image.url }}">
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
 
-            {% endfor %}
+            {% if post.tags.all %}
+                <div class="pd-tags">
+                    {% for tag in post.tags.all %}
+                        <a href="{% url 'tag_posts' tag.slug %}" class="chip">#{{ tag.name }}</a>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
-        </div>
+            <div class="pd-actions">
+                <div class="stamp-row">
+                    {% if user.is_authenticated %}
+                        <button type="button" class="stamp-btn {% if user in post.likes.all %}is-active{% endif %}" data-like-url="{% url 'like_post' post.id %}" data-post-id="{{ post.id }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+                            <span data-like-count="{{ post.id }}">{{ post.like_count }}</span> Like
+                        </button>
+                        <button type="button" class="stamp-btn stamp-save {% if user in post.saved_by.all %}is-active{% endif %}" data-save-url="{% url 'save_post' post.id %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2Z"/></svg>
+                            Save
+                        </button>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="stamp-btn">❤️ {{ post.like_count }} Like</a>
+                        <a href="{% url 'login' %}" class="stamp-btn">🔖 Save</a>
+                    {% endif %}
+                    <a href="#comments" class="stamp-btn">💬 {{ post.comment_count }}</a>
+                </div>
 
+                {% if user == post.author %}
+                    <div class="pd-owner-actions">
+                        <a href="{% url 'edit_post' post.id %}" class="btn btn-ghost btn-sm">✏️ Edit</a>
+                        <a href="{% url 'delete_post' post.id %}" class="btn btn-ghost btn-sm" style="color:var(--hot-coral);">🗑 Delete</a>
+                    </div>
+                {% endif %}
+            </div>
+        </article>
+
+        <section class="comments-section" id="comments">
+            <h2>💬 {{ post.comment_count }} Comment{{ post.comment_count|pluralize }}</h2>
+
+            {% if user.is_authenticated %}
+                <form method="post" class="comment-form sticker">
+                    {% csrf_token %}
+                    {{ form.content }}
+                    {% if form.content.errors %}<div class="form-errors">{{ form.content.errors|striptags }}</div>{% endif %}
+                    <div class="flex justify-between items-center" style="margin-top:12px;">
+                        <span class="text-faint" style="font-size:12px;">Be nice. Or at least be funny.</span>
+                        <button type="submit" class="btn btn-primary btn-sm">Post comment</button>
+                    </div>
+                </form>
+            {% else %}
+                <div class="empty-state" style="padding:30px;">
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-sm">Log in to comment</a>
+                </div>
+            {% endif %}
+
+            <div class="comment-list">
+                {% for comment in comments %}
+                    <div class="comment sticker">
+
+                        <div class="comment-head">
+                            <img src="{{ comment.author.profile.profile_image.url }}" alt="">
+                            <div>
+                                <div class="name">
+                                    <a href="{% url 'public_profile' comment.author.username %}">@{{ comment.author.username }}</a>
+                                </div>
+                                <time>{{ comment.created_at|timesince }} ago</time>
+                            </div>
+                        </div>
+
+                        <p class="comment-body">{{ comment.content }}</p>
+
+                        <div class="comment-actions">
+                            {% if user.is_authenticated %}
+                                <button data-comment-like-url="{% url 'like_comment' comment.id %}" class="{% if user in comment.likes.all %}is-active{% endif %}">
+                                    ❤️ <span data-count>{{ comment.like_count }}</span>
+                                </button>
+                                <button data-reply-toggle="reply-{{ comment.id }}">↩ Reply</button>
+                            {% endif %}
+                            {% if comment.author == user %}
+                                <a href="{% url 'edit_comment' comment.id %}">Edit</a>
+                                <form method="post" action="{% url 'delete_comment' comment.id %}" style="display:inline;" onsubmit="return confirm('Delete this comment?');">
+                                    {% csrf_token %}
+                                    <button type="submit">Delete</button>
+                                </form>
+                            {% endif %}
+                        </div>
+
+                        {% if user.is_authenticated %}
+                            <form method="post" class="reply-form" id="reply-{{ comment.id }}">
+                                {% csrf_token %}
+                                <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                                <textarea name="content" class="form-control" rows="2" placeholder="Reply to @{{ comment.author.username }}…" required></textarea>
+                                <button type="submit" class="btn btn-primary btn-sm" style="margin-top:8px;">Reply</button>
+                            </form>
+                        {% endif %}
+
+                        {% if comment.replies.all %}
+                            <div class="reply-list">
+                                {% for reply in comment.replies.all %}
+                                    <div>
+                                        <div class="comment-head">
+                                            <img src="{{ reply.author.profile.profile_image.url }}" alt="">
+                                            <div>
+                                                <div class="name"><a href="{% url 'public_profile' reply.author.username %}">@{{ reply.author.username }}</a></div>
+                                                <time>{{ reply.created_at|timesince }} ago</time>
+                                            </div>
+                                        </div>
+                                        <p class="comment-body">{{ reply.content }}</p>
+                                        <div class="comment-actions">
+                                            {% if user.is_authenticated %}
+                                                <button data-comment-like-url="{% url 'like_comment' reply.id %}" class="{% if user in reply.likes.all %}is-active{% endif %}">
+                                                    ❤️ <span data-count>{{ reply.like_count }}</span>
+                                                </button>
+                                            {% endif %}
+                                            {% if reply.author == user %}
+                                                <a href="{% url 'edit_comment' reply.id %}">Edit</a>
+                                                <form method="post" action="{% url 'delete_comment' reply.id %}" style="display:inline;" onsubmit="return confirm('Delete this reply?');">
+                                                    {% csrf_token %}
+                                                    <button type="submit">Delete</button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <span class="emoji">🦗</span>
+                        <h3>No comments yet</h3>
+                        <p>Say something before this post gets away.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
     </div>
 
-    <!-- ADD COMMENT -->
-
-    {% if user.is_authenticated %}
-
-    <div class="card mt-4 shadow">
-
-        <div class="card-header">
-
-            <h4>
-
-                Add Comment
-
-            </h4>
-
-        </div>
-
-        <div class="card-body">
-
-            <form method="POST">
-
-                {% csrf_token %}
-
-                {{ form.as_p }}
-
-                <button class="btn btn-primary">
-
-                    Add Comment
-
+    <aside class="pd-sidebar">
+        <div class="author-card sticker">
+            <img src="{{ post.author.profile.profile_image.url }}" alt="">
+            <div class="name" style="font-weight:800;">@{{ post.author.username }}</div>
+            <p class="text-faint" style="font-size:12.5px;">{{ post.author.profile.bio|default:"No bio yet."|truncatewords:14 }}</p>
+            <div class="author-stats">
+                <div><b>{{ post.author.profile.post_count }}</b>posts</div>
+                <div><b data-follower-count>{{ post.author.profile.follower_count }}</b>followers</div>
+            </div>
+            {% if user.is_authenticated and user != post.author %}
+                <button
+                    type="button"
+                    class="btn btn-block btn-sm {% if is_following_author %}btn-primary{% else %}btn-ghost{% endif %}"
+                    data-follow-url="{% url 'toggle_follow' post.author.username %}"
+                    id="pdFollowBtn"
+                >
+                    {% if is_following_author %}Following{% else %}Follow{% endif %}
                 </button>
-
-            </form>
-
+            {% elif not user.is_authenticated %}
+                <a href="{% url 'login' %}" class="btn btn-block btn-sm btn-ghost">Follow</a>
+            {% endif %}
         </div>
 
-    </div>
-
-    {% endif %}
-
+        {% if related_posts %}
+            <div class="sidebar-card sticker">
+                <h3>You might also like</h3>
+                <div class="related-list">
+                    {% for rp in related_posts %}
+                        <a class="related-item" href="{% url 'post_detail' rp.id %}">
+                            {% if rp.image %}
+                                <img src="{{ rp.image.url }}" alt="">
+                            {% else %}
+                                <div class="no-image" style="width:56px;height:56px;border-radius:10px;">🖼️</div>
+                            {% endif %}
+                            <div>
+                                <div class="title">{{ rp.title|truncatechars:38 }}</div>
+                                <div class="text-faint" style="font-size:11.5px;">❤️ {{ rp.like_count }}</div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </aside>
 </div>
 
 {% endblock %}

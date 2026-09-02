@@ -41,7 +41,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-Then open http://127.0.0.1:8000/
+Then open dedpussy003.pythonanywhere.com
 
 Your existing `db.sqlite3` and uploaded media are untouched — migrations were
 generated and applied against your real data with no issues.

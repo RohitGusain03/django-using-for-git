@@ -41,7 +41,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-Then open dedpussy003.pythonanywhere.com
+Then open [dedpussy003.pythonanywhere.com](https://dedpussy003.pythonanywhere.com/?utm_source=chatgpt.com)
 
 Your existing `db.sqlite3` and uploaded media are untouched — migrations were
 generated and applied against your real data with no issues.
